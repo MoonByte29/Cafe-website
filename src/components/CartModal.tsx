@@ -1,6 +1,6 @@
-import React from 'react';
-import { useCartStore } from '../store/cartStore';
-import { X as CloseIcon, Minus, Plus, Send } from 'lucide-react';
+import React, { useState } from "react";
+import { useCartStore } from "../store/cartStore";
+import { X as CloseIcon, Minus, Plus, Send } from "lucide-react";
 
 interface CartModalProps {
   isOpen: boolean;
@@ -9,16 +9,24 @@ interface CartModalProps {
 
 export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
   const { cart, updateQuantity, removeFromCart, clearCart } = useCartStore();
+  const [tableNumber, setTableNumber] = useState<string | undefined>();
 
   if (!isOpen) return null;
 
   const handleWhatsAppOrder = () => {
-    const orderText = `*New Order*\n\n${cart.items
-      .map((item) => `${item.quantity}- ${item.name} = Rs.${(item.price * item.quantity).toFixed(2)}`)
-      .join('\n')}\n\n*Total: Rs.${cart.total.toFixed(2)}*`;
+    const orderText = `Table: ${tableNumber || "None"}\n\n*New Order*\n\n${cart.items
+      .map(
+        (item) =>
+          `${item.quantity} × ${item.name} = Rs.${(
+            item.price * item.quantity
+          ).toFixed(2)}`
+      )
+      .join("\n")}\n\n*Total: Rs.${cart.total.toFixed(2)}*`;
 
-    const whatsappUrl = `https://wa.me/8696403065?text=${encodeURIComponent(orderText)}`;
-    window.open(whatsappUrl, '_blank');
+    const whatsappUrl = `https://wa.me/8696403065?text=${encodeURIComponent(
+      orderText
+    )}`;
+    window.open(whatsappUrl, "_blank");
     clearCart();
     onClose();
   };
@@ -32,6 +40,22 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
             <CloseIcon size={20} />
           </button>
         </div>
+        <div className="mb-4">
+          <label
+            htmlFor="tableNumber"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Table Number
+          </label>
+          <input
+            id="tableNumber"
+            type="text"
+            placeholder="Enter table number"
+            value={tableNumber || ""}
+            onChange={(e) => setTableNumber(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-amber-600"
+          />
+        </div>
 
         {cart.items.length === 0 ? (
           <p className="text-center text-gray-500 my-8">Your cart is empty</p>
@@ -39,10 +63,15 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
           <>
             <div className="space-y-4 mb-6">
               {cart.items.map((item) => (
-                <div key={item.id} className="flex items-center justify-between">
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between"
+                >
                   <div>
                     <h3 className="font-medium">{item.name}</h3>
-                    <p className="text-gray-600">${item.price.toFixed(2)}</p>
+                    <p className="text-gray-600">
+                      Rs. {(item.price * item.quantity).toFixed(2)}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -65,7 +94,7 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
             <div className="border-t pt-4">
               <div className="flex justify-between items-center mb-4">
                 <span className="font-bold">Total:</span>
-                <span className="font-bold">${cart.total.toFixed(2)}</span>
+                <span className="font-bold">Rs. {cart.total.toFixed(2)}</span>
               </div>
               <button
                 onClick={handleWhatsAppOrder}
